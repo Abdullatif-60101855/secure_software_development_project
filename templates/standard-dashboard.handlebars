@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Improved styling for the enhanced design */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        li {
+            margin-bottom: 15px;
+        }
+        a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        a:hover {
+            background-color: #f0f0f0;
+        }
+        .icon {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>User Dashboard</h1>
+        <ul>
+            <li><a href="/scheduleService" id="scheduleService"><i class="fas fa-calendar-alt icon"></i>Schedule Service</a></li>
+            <li><a href="/serviceHistory" id="viewServiceHistory"><i class="fas fa-history icon"></i>View Service History</a></li>
+            <li><a href="#" id="receiveNotifications"><i class="fas fa-bell icon"></i>Receive Notifications</a></li>
+            <li><a href="#" id="makePayments"><i class="fas fa-credit-card icon"></i>Make Payments</a></li>
+            <li><a href="#" id="logout"><i class="fas fa-sign-out-alt icon"></i>Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- JavaScript Code -->
+    <script>
+        // Get the template script
+        var source = document.getElementById("userDashboardTemplate").innerHTML;
+        
+        // Render template and append to #userDashboard div
+        document.getElementById("userDashboard").innerHTML = source;
+    </script>
+</body>
+</html>
