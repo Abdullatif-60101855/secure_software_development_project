@@ -1,59 +1,74 @@
-const mongodb = require('mongodb');
+const { MongoClient } = require('mongodb');
 const crypto = require("crypto");
 
 let client = undefined;
 let db = undefined;
-let users = undefined;
-let session = undefined;
-let serviceAppointments = undefined;
-let invoices = undefined;
-let sparePartsInventory = undefined;
-let VehicleMaintenanceRecords = undefined;
 
 async function connectDatabase() {
     if (!client) {
-        client = new mongodb.MongoClient('mongodb+srv://mrmickeymouse117:MickeyPass123@cluster0.dukaoqe.mongodb.net/');
+        client = new MongoClient('mongodb+srv://mrmickeymouse117:MickeyPass123@cluster0.dukaoqe.mongodb.net/');
         await client.connect();
         db = client.db('Car_Maintenance_Centre');
-        users = db.collection('UserAccounts');
-        session = db.collection('Session');
-        serviceAppointments = db.collection('Service_Appointments');
-        invoices = db.collection('Invoices');
-        sparePartsInventory = db.collection('Spare_Parts_Inventory');
-        VehicleMaintenanceRecords = db.collection('Vehicle_Maintenance_Records');
     }
+    return db;
 }
 
 async function get_user_information(username) {
-    await connectDatabase();
+    const db = await connectDatabase();
+    const users = db.collection('UserAccounts');
     if (users) {
-        let userInfo = await users.findOne({ 'username': username });
-        return userInfo; // returning userInfo regardless of account lock status
+        const userInfo = await users.findOne({ 'username': username });
+        if (userInfo && !isAccountLocked(userInfo)) {
+            return userInfo;
+        }
+    }
+    return undefined;
+}
+
+async function update_user_information(username, data) {
+    await connectDatabase();
+    let users = db.collection('UserAccounts');
+    if (users){
+        await users.updateOne({ username: username }, { $set: data });
     }
 }
 
-async function lock_user_account(username) {
+async function save_session_data(uuid, expiry, data) {
     await connectDatabase();
-    if (users){
-        await users.updateOne({ username: username }, { $set: { locked: true } }); // Locking account without setting lockoutExpiry
+    let session = db.collection('Session');
+    if (session){
+        await session.insertOne({SessionKey: uuid, Expiry: expiry, Data: data})
     }
 }
 
 async function get_user_session_data(key) {
     await connectDatabase();
-    if(session){
-        let session_data = await session.find({'SessionKey': key}).toArray();
-        return session_data[0]
-    }
-    return undefined;
+    let session = db.collection('Session');
+    let session_data = await session.find({'SessionKey': key}).toArray();
+    return session_data[0];
 }
 
-async function save_session_data(uuid, expiry, data) {
-    await connectDatabase();
-    if (session){
-        await session.insertOne({SessionKey: uuid, Expiry: expiry, Data: data})
+async function terminate_session(key) {
+    await connectDatabase()
+    let session = db.collection('Session')
+    await session.deleteOne({key: key})
+}
+
+
+
+async function lock_user_account(username, lockoutDuration = 1000 * 60 * 1) { 
+    const db = await connectDatabase();
+    const users = db.collection('UserAccounts');
+    if (users) {
+        const lockoutExpiry = new Date(Date.now() + lockoutDuration);
+        await users.updateOne({ username: username }, { $set: { locked: true, lockoutExpiry: lockoutExpiry } });
     }
 }
+
+function isAccountLocked(userInformation) {
+    return userInformation.locked === true && userInformation.lockoutExpiry instanceof Date && userInformation.lockoutExpiry > new Date();
+}
+
 
 function computeHashSha512(password) {
     let hash = crypto.createHash('sha512')
@@ -62,15 +77,11 @@ function computeHashSha512(password) {
     return res 
 }
 
-async function update_user_information(username, data) {
-    await connectDatabase();
-    if (users){
-        await users.updateOne({ username: username }, { $set: data });
-    }
-}
+
 
 async function add_information_to_serviceAppointments_collection(data) {
     await connectDatabase();
+    let serviceAppointments = db.collection('Service_Appointments');
     if (serviceAppointments){
         await serviceAppointments.insertOne(data);
     }
@@ -78,6 +89,7 @@ async function add_information_to_serviceAppointments_collection(data) {
 
 async function get_info_from_serviceAppointments_collection(){
     await connectDatabase();
+    let serviceAppointments = db.collection('Service_Appointments');
     if (serviceAppointments){
         let serviceData = await serviceAppointments.find({}).toArray();
         return serviceData;
@@ -87,6 +99,7 @@ async function get_info_from_serviceAppointments_collection(){
 
 async function add_information_to_invoices_collection(data) {
     await connectDatabase();
+    let invoices = db.collection('Invoices');
     if (invoices){
         await invoices.insertOne(data);
     }
@@ -129,9 +142,16 @@ async function get_info_from_VehicleMaintenanceRecords_collection(){
         let VehicleMaintenanceData = await VehicleMaintenanceRecords.find({}).toArray();
         return VehicleMaintenanceData;
     }
-
 }
 
+// async function test() {
+//     await connectDatabase();
+//     // console.log(await get_user_information('MickeyMouse'));
+//     // console.log(await lock_user_account('MickeyMouse'));
+//     console.log(await get_user_session_data('808c7c96-d72e-46f3-8c04-9b9aeb8085a7'));
+// }
+
+// test()
 
 module.exports = {
     get_user_information,
@@ -147,5 +167,6 @@ module.exports = {
     add_information_to_sparePartsInventory_collection,
     get_info_from_sparePartsInventory_collection,
     add_information_to_VehicleMaintenanceRecords_collection,
-    get_info_from_VehicleMaintenanceRecords_collection
+    get_info_from_VehicleMaintenanceRecords_collection,
+    terminate_session
 }

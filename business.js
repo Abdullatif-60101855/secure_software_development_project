@@ -32,10 +32,10 @@ async function get_user_type(username, password) {
         
         return userData.accountType;
     } catch (error) {
-        console.error("An error occurred:", error);
-        throw error; // Rethrow the error for handling at higher level
+        throw error; // Rethrow the error for handling at a higher level
     }
 }
+
 
 
 async function get_user_session_data(key) {
@@ -54,8 +54,26 @@ async function start_user_session(data){
     return sessionId;
 }
 
+function generateServiceId(shopCode = "SH001", carRegistrationNumber) {
+    const currentDate = new Date().toISOString().slice(0,10).replace(/-/g,"");
+    const uniqueId = Math.random().toString(36).substr(2, 6);
+    const serviceId = `${shopCode}-${carRegistrationNumber}-${currentDate}-${uniqueId}`;
+    return serviceId;
+}
+
 async function schedule_service(sessionId, data) {
     try {
+        // Get current date
+        const currentDate = new Date();
+        
+        // Parse the provided date string into a Date object
+        const appointmentDate = new Date(data.Date);
+        
+        // Check if the appointment date is in the past
+        if (appointmentDate < currentDate) {
+            return false; // Cannot book appointments on past dates
+        }
+
         const check_serviceAppointments = await persistence.get_info_from_serviceAppointments_collection();
 
         if (check_serviceAppointments.some(appointment => (appointment.Date === data.Date && appointment.Time === data.Time) || appointment.Plate === data.Plate)) {
@@ -64,11 +82,12 @@ async function schedule_service(sessionId, data) {
             const sessionData = await persistence.get_user_session_data(sessionId);
             const serviceData = {
                 username: sessionData.Data.username,
+                serviceId: generateServiceId("SH001", data.Plate),
                 Make: data.Make,
                 Model: data.Model,
                 Plate: data.Plate,
                 Service: data.Service,
-                Date: data.Date,
+                Date: appointmentDate, // Assign the parsed appointment date
                 Time: data.Time,
                 Contact: data.Contact,
                 Requests: data.Requests
@@ -81,6 +100,8 @@ async function schedule_service(sessionId, data) {
         throw error; // Propagate the error
     }
 }
+
+
 async function add_information_to_VehicleMaintenanceRecords_collection(data){
     await persistence.add_information_to_VehicleMaintenanceRecords_collection(data);
 }
@@ -93,6 +114,10 @@ async function get_info_from_serviceAppointments_collection(){
     return await persistence.get_info_from_serviceAppointments_collection();
 }
 
+async function terminate_session(sessionId) {
+    await persistence.terminate_session(sessionId);
+}
+
 
 
 module.exports = {
@@ -102,5 +127,6 @@ module.exports = {
     schedule_service,
     add_information_to_VehicleMaintenanceRecords_collection,
     get_info_from_VehicleMaintenanceRecords_collection,
-    get_info_from_serviceAppointments_collection
+    get_info_from_serviceAppointments_collection,
+    terminate_session
 };

@@ -6,29 +6,33 @@
     <title>Login Page</title>
     <style>
         body {
+            margin: 10px;
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            position: relative;
-        }
-
-        .container {
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
-            position: relative;
         }
 
-        .login-form {
+        .login-section {
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 350px; /* Adjusted width */
-            position: relative;
+            width: 350px;
+        }
+
+        .welcome-section {
+            margin-left: 20px;
+        }
+
+        .welcome-section img {
+            width: 200px; /* Increased size of the image */
+            display: block;
+            margin: 0 auto 15px; /* Centered the image and added space below */
+            border-radius: 0%;
+            border: 2px solid #000000;
         }
 
         h2 {
@@ -61,27 +65,26 @@
         input[type="submit"]:hover {
             background-color: #45a049;
         }
-
-        img {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            margin-bottom: 20px;
-            margin-right: 20px;
-        }
     </style>
 </head>
 <body>
-<div class="container">
-    <form class="login-form" action="/login" method="post">
-        <h2>Login</h2>
+<div class="login-section">
+    <h2>VSMT</h2>
+    {{#if message}}
+    <div class="alert alert-danger">
+    {{message}}
+    </div>
+{{/if}}
+    <form action="/" method="post">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username">
         <label for="password">Password:</label>
         <input type="password" id="password" name="password">
         <input type="submit" value="Login">
     </form>
-    <img src="{{imagePath}}" alt="Image" width="20%">
+</div>
+<div class="welcome-section">
+    <img src="{{imagePath}}" alt="Image">
 </div>
 </body>
 </html>

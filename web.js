@@ -1,51 +1,49 @@
-const express = require('express');
-const { engine } = require('express-handlebars');
-const bodyParser = require('body-parser');
-const app = express();
-const cookieParser = require('cookie-parser');
-const business = require('./business.js');
+const express=require('express')
+const business = require('./business.js')
+const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser')
+const handlebars = require('express-handlebars')
+let app = express()
 
 // Configure Express to use Handlebars
-app.set('views', __dirname + "/templates");
+app.set('views', __dirname+"/templates")
 app.set('view engine', 'handlebars');
-app.engine('handlebars', engine({ layoutsDir: __dirname + "/templates", defaultLayout: false })); // Disable layouts
-// Serve static files from the 'public' directory
-app.use(express.static('public'));
+app.engine('handlebars', handlebars.engine())
+app.use(bodyParser.urlencoded({extended: false}))
+app.use(cookieParser())
+app.use('/images', express.static(__dirname+"/static/images"))
 
-app.use(bodyParser.urlencoded({ extended: true }));
-// main login page for admin and normal user 
-app.use(cookieParser());
-
-app.get('/login', (req, res) => {
-    res.render('login', { imagePath: '/av1.1.png' });
+app.get('/', (req, res) => {
+    let message = req.query.message;
+    res.render('login', { message: message, imagePath: '/images/av1.1.png'});
 });
 
-app.post('/login', async (req, res) => {
+
+app.post('/', async (req, res) => {
     const { username, password } = req.body;
     try {
         const role = await business.get_user_type(username, password);
         
         if (role === undefined) {
-            res.status(401).send('Invalid Username or Password');
+            res.redirect('/?message=Invalid Username or Password');
             return;
         } else if (role === false) {
-            res.status(403).send('Account is locked');
+            res.redirect('/?message=Account is locked');
             return;
         }
 
         const sessionId = await business.start_user_session({ username, accountType: role });
         const sessionInfo = await business.get_user_session_data(sessionId);
         res.cookie('sessionkey', sessionId, { expires: sessionInfo.Expiry });
-        
 
         // Redirect user based on their role
         if (role === 'admin') {
-            res.render('admin-dashboard');
+            res.redirect('/admin-dashboard');
         } else if (role === 'standard') {
-            res.render('standard-dashboard', { layout: undefined });
+            res.redirect('/standard-dashboard');
 
         } else if (role === 'technician') {
-            res.render('technician-dashboard', { layout: undefined });
+            res.redirect('/technician-dashboard');
         
         } else {
             res.status(403).send('Forbidden'); // Or handle other roles accordingly
@@ -56,11 +54,23 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.get('/scheduleService', (req, res) => {
-    res.render('scheduleService');
+app.get('/admin-dashboard', (req, res) => {
+    res.render('admin-dashboard');
 });
 
-app.post('/scheduleService', async (req, res) => {
+app.get('/standard-dashboard', (req, res) => {
+    res.render('primary_actor/standard-dashboard');
+});
+
+app.get('/technician-dashboard', (req, res) => {
+    res.render('technician-dashboard');
+});
+
+app.get('/schedule_service', (req, res) => {
+    res.render('primary_actor/schedule_service');
+});
+
+app.post('/schedule_service', async (req, res) => {
     const { Make, Model, Plate, Service, Date, Time, Contact, Requests } = req.body;
     let get_user_session_from_cookie = req.cookies.sessionkey;
     try {
@@ -78,29 +88,30 @@ app.post('/scheduleService', async (req, res) => {
 // Endpoint to retrieve service history
 app.get('/serviceHistory', async (req, res) => {
     try {
-        let get_user_session_from_cookie = req.cookies.sessionkey;
-        let username = (await business.get_user_session_data(get_user_session_from_cookie)).Data.username;
-        // Retrieving service appointments from the collection
-        const serviceAppointments = await business.get_info_from_serviceAppointments_collection({ username});
+        let get_user_session_from_cookie = req.cookies.sessionkey; // Retrieving session key from cookie
+        let username = (await business.get_user_session_data(get_user_session_from_cookie)).Data.username; // Retrieving username from session data
+        const serviceAppointments = await business.get_info_from_serviceAppointments_collection({ username }); // Retrieving service appointments from the collection
 
-        // Checking if there are upcoming service appointments
-        if (serviceAppointments && serviceAppointments.Date) {
-            const serviceAppointmentsDate = new Date(serviceAppointments.Date);
+        // Checking if there are any service appointments
+        if (serviceAppointments && serviceAppointments.length > 0) {
             const today = new Date();
 
-            // Checking if the service appointment date is in the future
-            if (serviceAppointmentsDate > today) {
-                // Adding information to Vehicle Maintenance Records collection
-                const record = await business.add_information_to_VehicleMaintenanceRecords_collection(serviceAppointments);
+            // Checking each service appointment
+            for (const appointment of serviceAppointments) {
+                const serviceAppointmentsDate = new Date(appointment.Date);
 
-                // Rendering service history page with the retrieved record
-                res.render('serviceHistory');
-                return; // Exiting the function after rendering
+                // Checking if the service appointment date is in the past
+                if (serviceAppointmentsDate < today) {
+                    // Rendering service history page with the retrieved appointments
+                    res.render('serviceHistory', { serviceAppointments });
+                    return; // Exiting the function after rendering
+                }
             }
         }
 
-        // If there are no upcoming service appointments or the appointments are in the past, render an appropriate response
-        res.render('noServiceHistory', { message: 'No upcoming service appointments found.' });
+        // Render an appropriate response if no upcoming or past service appointments found
+        res.render('primary_actor/noServiceHistory', { message: 'No upcoming or past service appointments found.' });
+
     } catch (error) {
         // Logging and responding to any errors that occur during the process
         console.error('Error retrieving service history:', error);
@@ -108,10 +119,18 @@ app.get('/serviceHistory', async (req, res) => {
     }
 });
 
+app.get('/logout', async (req, res) => {
+    let session_id = req.cookies.SessionKey;
+    await business.terminate_session(session_id);
+    res.clearCookie('sessionkey');
+    res.redirect('/');
+});
+
+
 
 
 app.listen(8000, () => {
-    console.log(`App is running on http://localhost:8000/login`);
+    console.log(`App is running on http://localhost:8000`);
 });
 
 

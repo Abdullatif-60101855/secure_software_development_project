@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Service Appointment</title>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Improved styling for the enhanced design */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        li {
+            margin-bottom: 15px;
+        }
+        a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        a:hover {
+            background-color: #f0f0f0;
+        }
+        .icon {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        /* Form styling */
+        form {
+            margin-top: 30px;
+        }
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        input[type="date"],
+        input[type="time"],
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 15px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Schedule Service Appointment</h1>
+        <!-- Service Appointment Form -->
+        <form id="serviceAppointmentForm" action="/schedule_service" method="POST">
+            <label for="carMake">Car Make:</label>
+            <input type="text" id="carMake" name="Make" required>
+
+            <label for="carModel">Car Model:</label>
+            <input type="text" id="carModel" name="Model" required>
+
+            <label for="carPlate">Car Plate:</label>
+            <input type="text" id="carPlate" name="Plate" required>
+
+            <label for="serviceRequired">Service Required:</label>
+            <input type="text" id="serviceRequired" name="Service" required>
+
+              <label for="date">Date:</label>
+            <input type="date" id="date" name="Date" required>
+
+             <label for="time">Time:</label>
+            <select id="time" name="Time" required>
+                <option value="">Select Time</option>
+                <!-- Populate time intervals from 8:00 AM to 5:00 PM with 30-minute intervals -->
+                <option value="08:00">8:00 AM</option>
+                <option value="08:30">8:30 AM</option>
+                <option value="09:00">9:00 AM</option>
+                <option value="09:30">9:30 AM</option>
+                <option value="10:00">10:00 AM</option>
+                <option value="10:30">10:30 AM</option>
+                <option value="11:00">11:00 AM</option>
+                <option value="11:30">11:30 AM</option>
+                <option value="12:00">12:00 PM</option>
+                <option value="12:30">12:30 PM</option>
+                <option value="13:00">1:00 PM</option>
+                <option value="13:30">1:30 PM</option>
+                <option value="14:00">2:00 PM</option>
+                <option value="14:30">2:30 PM</option>
+                <option value="15:00">3:00 PM</option>
+                <option value="15:30">3:30 PM</option>
+                <option value="16:00">4:00 PM</option>
+                <option value="16:30">4:30 PM</option>
+            </select>
+
+            <label for="contactInfo">Contact Information:</label>
+            <input type="text" id="contactInfo" name="Contact" required>
+
+            <label for="additionalRequests">Any Additional Requests:</label>
+            <textarea id="additionalRequests" name="Requests" rows="4"></textarea>
+
+            <input type="submit" value="Submit Appointment">
+        </form>
+    </div>
+</body>
+</html>
