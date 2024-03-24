@@ -1,2 +1,2 @@
 # secure_software_development_project
-Vehicle Service and Maintenance Tracker: a system for managers of a vehicle service center to manage service appointments, vehicle maintenance records, and spare parts inventory.
+Vehicle Service and Maintenance Tracker: A system designed to facilitate the management of service appointments, vehicle maintenance records, and spare parts inventory for the managers of a vehicle service center to perform essential functions.
