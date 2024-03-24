@@ -92,6 +92,7 @@ async function schedule_service(sessionId, data) {
                 Contact: data.Contact,
                 Requests: data.Requests
             };
+            console.log("time_slot:", serviceData.Time);
             await persistence.add_information_to_serviceAppointments_collection(serviceData);
             return true; // Appointment scheduled successfully
         }

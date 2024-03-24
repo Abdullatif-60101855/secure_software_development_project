@@ -101,7 +101,7 @@ app.get('/serviceHistory', async (req, res) => {
                 const serviceAppointmentsDate = new Date(appointment.Date);
 
                 // Checking if the service appointment date is in the past
-                if (serviceAppointmentsDate < today) {
+                if (serviceAppointmentsDate <= today) {
                     // Rendering service history page with the retrieved appointments
                     res.render('serviceHistory', { serviceAppointments });
                     return; // Exiting the function after rendering

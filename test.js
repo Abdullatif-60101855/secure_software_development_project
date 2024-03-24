@@ -15,6 +15,12 @@ async function main(){
     // console.log(sessionData)
     // let lst  = await persistence.check_serviceAppointments();
     // console.log(lst.length)
+    let string_time = '9:30';
+    let toDay = new Date();
+    let timeParts = string_time.split(':'); // Splitting the time string into hours and minutes
+    let time = new Date(toDay.getFullYear(), toDay.getMonth(), toDay.getDate(), parseInt(timeParts[0]), parseInt(timeParts[1])); // Creating a new Date object with current date and time from the string
+    console.log(time);
+    
 }
 
-// main()
+main()
