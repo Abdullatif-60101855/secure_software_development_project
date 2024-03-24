@@ -75,32 +75,46 @@ async function schedule_service(sessionId, data) {
         }
 
         const check_serviceAppointments = await persistence.get_info_from_serviceAppointments_collection();
-
-        if (check_serviceAppointments.some(appointment => (appointment.Date === data.Date && appointment.Time === data.Time) || appointment.Plate === data.Plate)) {
-            return false; // Appointment already exists
-        } else {
-            const sessionData = await persistence.get_user_session_data(sessionId);
-            const serviceData = {
-                username: sessionData.Data.username,
-                serviceId: generateServiceId("SH001", data.Plate),
-                Make: data.Make,
-                Model: data.Model,
-                Plate: data.Plate,
-                Service: data.Service,
-                Date: appointmentDate, // Assign the parsed appointment date
-                Time: data.Time,
-                Contact: data.Contact,
-                Requests: data.Requests
-            };
-            console.log("time_slot:", serviceData.Time);
-            await persistence.add_information_to_serviceAppointments_collection(serviceData);
-            return true; // Appointment scheduled successfully
+        
+        // Check if the appointment already exists
+        for (let appointment of check_serviceAppointments) {
+            if (appointment.Date === data.Date && appointment.Time === data.Time) {
+                    return false; // Appointment already exists
+                }else if(appointment.Plate === data.Plate){
+                    return false; // Appointment already exists
+            }
         }
+
+        // Get user session data
+        const sessionData = await persistence.get_user_session_data(sessionId);
+        
+        // Generate service ID
+        const serviceId = generateServiceId("SH001", data.Plate);
+        
+        // Prepare service data
+        const serviceData = {
+            username: sessionData.Data.username,
+            serviceId: serviceId,
+            Make: data.Make,
+            Model: data.Model,
+            Plate: data.Plate,
+            Service: data.Service,
+            Date: data.Date,
+            Time: data.Time,
+            Contact: data.Contact,
+            Requests: data.Requests
+        };
+        
+        // Add service appointment to the collection
+        await persistence.add_information_to_serviceAppointments_collection(serviceData);
+        
+        return true; // Appointment scheduled successfully
     } catch (error) {
         console.error("Error scheduling service:", error);
         throw error; // Propagate the error
     }
 }
+
 
 
 async function add_information_to_VehicleMaintenanceRecords_collection(data){
