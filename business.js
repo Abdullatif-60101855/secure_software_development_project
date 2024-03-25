@@ -61,16 +61,25 @@ function generateServiceId(shopCode = "SH001", carRegistrationNumber) {
     return serviceId;
 }
 
+function date_thing(date_object){
+    let str_date = `${date_object.getFullYear()}-${('0' + (date_object.getMonth() + 1)).slice(-2)}-${('0' + date_object.getDate()).slice(-2)}`;
+    return new Date(str_date);
+}
+
 async function schedule_service(sessionId, data) {
     try {
         // Get current date
-        const currentDate = new Date();
-        
+        const currentDate= new Date();
+        const currentDate_withoutTime = date_thing(currentDate);
+        console.log(currentDate_withoutTime);
+
         // Parse the provided date string into a Date object
         const appointmentDate = new Date(data.Date);
+        console.log(appointmentDate);
+
         
         // Check if the appointment date is in the past
-        if (appointmentDate < currentDate) {
+        if (appointmentDate < currentDate_withoutTime) {
             return false; // Cannot book appointments on past dates
         }
 
@@ -79,9 +88,9 @@ async function schedule_service(sessionId, data) {
         // Check if the appointment already exists
         for (let appointment of check_serviceAppointments) {
             if (appointment.Date === data.Date && appointment.Time === data.Time) {
-                    return false; // Appointment already exists
+                    return null; // Time slot already booked
                 }else if(appointment.Plate === data.Plate){
-                    return false; // Appointment already exists
+                    return undefined; // Plate already exists
             }
         }
 

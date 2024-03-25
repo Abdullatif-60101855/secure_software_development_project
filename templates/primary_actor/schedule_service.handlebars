@@ -92,6 +92,11 @@
 <body>
     <div class="container">
         <h1>Schedule Service Appointment</h1>
+            {{#if message}}
+                <div class="alert alert-danger" style="background-color: #e0f8d7; color: #080808; border-color: green">
+                    {{message}}
+                </div>
+            {{/if}}
         <!-- Service Appointment Form -->
         <form id="serviceAppointmentForm" action="/schedule_service" method="POST">
             <label for="carMake">Car Make:</label>
@@ -138,7 +143,6 @@
 
             <label for="additionalRequests">Any Additional Requests:</label>
             <textarea id="additionalRequests" name="Requests" rows="4"></textarea>
-
             <input type="submit" value="Submit Appointment">
         </form>
     </div>

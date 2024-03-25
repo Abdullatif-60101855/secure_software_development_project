@@ -67,23 +67,30 @@ app.get('/technician-dashboard', (req, res) => {
 });
 
 app.get('/schedule_service', (req, res) => {
-    res.render('primary_actor/schedule_service');
+    let message = req.query.message;
+    res.render('primary_actor/schedule_service', { message: message });
 });
 
 app.post('/schedule_service', async (req, res) => {
     const { Make, Model, Plate, Service, Date, Time, Contact, Requests } = req.body;
     let get_user_session_from_cookie = req.cookies.sessionkey;
     try {
-        if(await business.schedule_service(get_user_session_from_cookie, { Make, Model, Plate, Service, Date, Time, Contact, Requests })){
-            res.status(200).send('Service scheduled successfully');
-        } else {
-            res.status(409).send('This time slot is already booked');
+        let schedule_service = await business.schedule_service(get_user_session_from_cookie, { Make, Model, Plate, Service, Date, Time, Contact, Requests });
+        if (schedule_service === false){
+            res.redirect('/schedule_service?message=Cannot book appointments on past dates');
+        } else if (schedule_service === null){
+            res.redirect('/schedule_service?message=Time slot already booked');
+        } else if (schedule_service === undefined){
+            res.redirect('/schedule_service?message=Plate already exists');
+        } else if (schedule_service === true){
+            res.redirect('/schedule_service?message=Appointment scheduled successfully');
         }
     } catch (error) {
         console.error('Service scheduling error:', error);
-        res.status(500).send('Internal Server Error');
+        return res.status(500).send('Internal Server Error');
     }
 });
+
 
 // Endpoint to retrieve service history
 app.get('/serviceHistory', async (req, res) => {
