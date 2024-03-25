@@ -1,3 +1,6 @@
+// Description: This file contains the business logic for the application.
+
+
 const persistence = require("./persistence.js");
 
 const MAX_FAILED_LOGIN_ATTEMPTS = 3; // Maximum allowed failed login attempts before locking the account

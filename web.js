@@ -1,3 +1,5 @@
+// Description: This file contains the web layer of the application.
+
 const express=require('express')
 const business = require('./business.js')
 const bodyParser = require('body-parser')

@@ -1,3 +1,5 @@
+// Description: This file contains the code that interacts with the database. It contains functions that allow the server to query the database for user information, update user information, and lock user accounts. It also contains functions that allow the server to save and retrieve session data.
+
 const { MongoClient } = require('mongodb');
 const crypto = require("crypto");
 
