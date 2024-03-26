@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .notification {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .notification h2 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Notifications</h1>
+    {{#if notifications.length}}
+        {{#each notifications}}
+            <div class="notification">
+                <p>[{{serviceId}}] On {{Date}}, {{username}} has scheduled a car service appointment. The service includes {{Service}} for their {{Make}} {{Model}} with the license plate {{Plate}}. The appointment is set for {{Time}}, and they can be reached at {{Contact}}. Additionally, they have requested {{Requests}}. This appointment is currently {{status}} confirmation by administrators.</p>
+            </div>
+        {{/each}}
+    {{else}}
+        <p>No notifications to display.</p>
+    {{/if}}
+</body>
+</html>

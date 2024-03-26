@@ -89,15 +89,20 @@ async function add_information_to_serviceAppointments_collection(data) {
     }
 }
 
-async function get_info_from_serviceAppointments_collection(){
+async function get_info_from_serviceAppointments_collection(username){
     await connectDatabase();
     let serviceAppointments = db.collection('Service_Appointments');
     if (serviceAppointments){
-        let serviceData = await serviceAppointments.find({}).toArray();
+        let serviceData;
+        if (username) {
+            serviceData = await serviceAppointments.find({username: username}).toArray();
+        } else {
+            serviceData = await serviceAppointments.find({}).toArray();
+        }
         return serviceData;
     }
-
 }
+
 
 async function add_information_to_invoices_collection(data) {
     await connectDatabase();
@@ -138,11 +143,16 @@ async function add_information_to_VehicleMaintenanceRecords_collection(data) {
     }
 }
 
-async function get_info_from_VehicleMaintenanceRecords_collection(){
+async function get_info_from_VehicleMaintenanceRecords_collection(username){
     await connectDatabase();
+    let VehicleMaintenanceRecords = db.collection('Vehicle_Maintenance_Records');
+    let VehicleMaintenanceData 
     if (VehicleMaintenanceRecords){
-        let VehicleMaintenanceData = await VehicleMaintenanceRecords.find({}).toArray();
+        VehicleMaintenanceData = await VehicleMaintenanceRecords.find({username: username}).toArray();
         return VehicleMaintenanceData;
+    }else{
+    VehicleMaintenanceData = await VehicleMaintenanceRecords.find({}).toArray();
+    return VehicleMaintenanceData;
     }
 }
 

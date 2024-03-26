@@ -128,6 +128,42 @@ app.get('/serviceHistory', async (req, res) => {
     }
 });
 
+app.get('/vehicleMaintenanceRecords', async (req, res) => {
+    try {
+        const vehicleMaintenanceRecords = await business.get_info_from_VehicleMaintenanceRecords_collection(); // Retrieving vehicle maintenance records from the collection
+
+        // Checking if there are any vehicle maintenance records
+        if (vehicleMaintenanceRecords && vehicleMaintenanceRecords.length > 0) {
+            // Rendering vehicle maintenance records page with the retrieved records
+            res.render('primary_actor/vehicleMaintenanceRecords', { vehicleMaintenanceRecords });
+        } else {
+            // Render an appropriate response if no vehicle maintenance records found
+            res.render('primary_actor/noVehicleMaintenanceRecords', { message: 'No vehicle maintenance records found.' });
+        }
+
+    } catch (error) {
+        // Logging and responding to any errors that occur during the process
+        console.error('Error retrieving vehicle maintenance records:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.get('/notifications', async (req, res) => {
+    try {
+        user_session = req.cookies.sessionkey;
+        let data_from_session = await business.get_user_session_data(user_session);
+        let username = data_from_session.Data.username;
+        // console.log(username);
+        const notifications = await business.get_info_from_serviceAppointments_collection(username);
+        // console.log(notifications);
+        res.render('primary_actor/notifications', { notifications: notifications });
+
+    }catch (error) {
+        console.error('Error retrieving notifications:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 app.get('/logout', async (req, res) => {
     let session_id = req.cookies.SessionKey;
     await business.terminate_session(session_id);

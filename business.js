@@ -64,27 +64,50 @@ function generateServiceId(shopCode = "SH001", carRegistrationNumber) {
     return serviceId;
 }
 
-function date_thing(date_object){
-    let str_date = `${date_object.getFullYear()}-${('0' + (date_object.getMonth() + 1)).slice(-2)}-${('0' + date_object.getDate()).slice(-2)}`;
-    return new Date(str_date);
+
+function combineDateTime(dateString, timeString) {
+    // Split date and time strings
+    const [year, month, day] = dateString.split('-');
+    const [time, meridiem] = timeString.split(' ');
+
+    // Split time into hours and minutes
+    const [hours, minutes] = time.split(':').map(Number);
+
+    // Adjust hours if PM
+    const adjustedHours = meridiem === 'PM' ? hours + 12 : hours;
+
+    // Create Date object
+    const combinedDate = new Date(year, month - 1, day, adjustedHours, minutes);
+
+    return combinedDate;
 }
+
 
 async function schedule_service(sessionId, data) {
     try {
         // Get current date
         const currentDate= new Date();
-        const currentDate_withoutTime = date_thing(currentDate);
-        console.log(currentDate_withoutTime);
+        // const currentDate_withoutTime = date_thing(currentDate);
 
         // Parse the provided date string into a Date object
-        const appointmentDate = new Date(data.Date);
-        console.log(appointmentDate);
+        const appointmentDate = combineDateTime(data.Date, data.Time);
 
         
         // Check if the appointment date is in the past
-        if (appointmentDate < currentDate_withoutTime) {
+        if (appointmentDate < currentDate) {
             return false; // Cannot book appointments on past dates
         }
+
+        // Check if the appointment time is in the past (in case the appointment is for today)
+        if (appointmentDate.getTime() === currentDate.getTime()) {
+            const timeParts = data.Time.split(':'); // Splitting the time string into hours and minutes
+            const appointmentTime = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), parseInt(timeParts[0]), parseInt(timeParts[1])); // Creating a new Date object with current date and time from the string
+            
+            if (appointmentTime < currentDate) {
+                return false; // Cannot book appointments on past dates
+            }
+        }
+
 
         const check_serviceAppointments = await persistence.get_info_from_serviceAppointments_collection();
         
@@ -114,7 +137,8 @@ async function schedule_service(sessionId, data) {
             Date: data.Date,
             Time: data.Time,
             Contact: data.Contact,
-            Requests: data.Requests
+            Requests: data.Requests,
+            status: "Pending"
         };
         
         // Add service appointment to the collection
@@ -137,8 +161,8 @@ async function get_info_from_VehicleMaintenanceRecords_collection(){
     return await persistence.get_info_from_VehicleMaintenanceRecords_collection();
 }
 
-async function get_info_from_serviceAppointments_collection(){
-    return await persistence.get_info_from_serviceAppointments_collection();
+async function get_info_from_serviceAppointments_collection(username){
+    return await persistence.get_info_from_serviceAppointments_collection(username);
 }
 
 async function terminate_session(sessionId) {
