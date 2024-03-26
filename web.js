@@ -179,12 +179,6 @@ app.get('/logout', async (req, res) => {
 
 
 
-app.listen(8000, () => {
-    console.log(`App is running on http://localhost:8000`);
+app.listen(process.env.PORT, () => {
+    console.log(`App is running on http://localhost:${process.env.PORT}`);
 });
-
-
-async function test_web_layer(){
-}
-
-// test_web_layer();

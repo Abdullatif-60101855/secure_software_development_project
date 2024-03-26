@@ -1,19 +1,22 @@
 // Description: This file contains the code that interacts with the database. It contains functions that allow the server to query the database for user information, update user information, and lock user accounts. It also contains functions that allow the server to save and retrieve session data.
 
-const { MongoClient } = require('mongodb');
+// app.js
+require('dotenv').config();
 const crypto = require("crypto");
+const { MongoClient } = require('mongodb');
 
 let client = undefined;
 let db = undefined;
 
 async function connectDatabase() {
     if (!client) {
-        client = new MongoClient('mongodb+srv://mrmickeymouse117:MickeyPass123@cluster0.dukaoqe.mongodb.net/');
+        client = new MongoClient(process.env.MONGODB_URI);
         await client.connect();
-        db = client.db('Car_Maintenance_Centre');
+        db = client.db(process.env.DATABASE_NAME);
     }
     return db;
 }
+
 
 async function get_user_information(username) {
     await connectDatabase();
