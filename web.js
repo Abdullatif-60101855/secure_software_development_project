@@ -27,10 +27,13 @@ app.post('/', async (req, res) => {
         const role = await business.get_user_type(username, password);
         
         if (role === undefined) {
-            res.redirect('/?message=Invalid Username or Password');
+            res.redirect('/?message=User not found');
             return;
         } else if (role === false) {
             res.redirect('/?message=Account is locked');
+            return;
+        } else if (role === null) {
+            res.redirect('/?message=Incorrect password');
             return;
         }
 
@@ -86,6 +89,8 @@ app.post('/schedule_service', async (req, res) => {
             res.redirect('/schedule_service?message=Plate already exists');
         } else if (schedule_service === true){
             res.redirect('/schedule_service?message=Appointment scheduled successfully');
+        }else if (schedule_service === "Input Error"){
+            res.redirect('/schedule_service?message=Invalid input');
         }
     } catch (error) {
         console.error('Service scheduling error:', error);

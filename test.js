@@ -3,9 +3,9 @@ const business = require('./business.js')
 
 
 async function main(){
-    let MickeyMouse_car = await persistence.get_info_from_serviceAppointments_collection('MickeyMouse');
-    console.log(MickeyMouse_car.Date)
+    let login = await business.get_user_type("MickeyMouse", "Mickey123")
+    console.log(login)
 }
-main()
+// main()
 
 

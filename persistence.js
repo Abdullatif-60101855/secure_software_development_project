@@ -16,16 +16,16 @@ async function connectDatabase() {
 }
 
 async function get_user_information(username) {
-    const db = await connectDatabase();
-    const users = db.collection('UserAccounts');
-    if (users) {
-        const userInfo = await users.findOne({ 'username': username });
-        if (userInfo && !isAccountLocked(userInfo)) {
-            return userInfo;
-        }
+    await connectDatabase();
+    let users = db.collection('UserAccounts');
+
+    if (!users) {
+        return undefined;
     }
-    return undefined;
+
+    return users.findOne({ 'username': username });
 }
+
 
 async function update_user_information(username, data) {
     await connectDatabase();
@@ -67,8 +67,19 @@ async function lock_user_account(username, lockoutDuration = 1000 * 60 * 1) {
     }
 }
 
+async function unlock_user_account(username) {
+    await connectDatabase();
+    let users = db.collection('UserAccounts');
+    await users.updateOne({ username: username }, { $set: { locked: false, lockoutExpiry: null } });
+
+}
+
+// function isAccountLocked(userInformation) {
+//     return userInformation.locked === true && userInformation.lockoutExpiry instanceof Date && userInformation.lockoutExpiry > new Date(); // 
+// }
+
 function isAccountLocked(userInformation) {
-    return userInformation.locked === true && userInformation.lockoutExpiry instanceof Date && userInformation.lockoutExpiry > new Date();
+    return userInformation.locked // check if account is locked
 }
 
 
@@ -157,10 +168,8 @@ async function get_info_from_VehicleMaintenanceRecords_collection(username){
 }
 
 // async function test() {
-//     await connectDatabase();
-//     // console.log(await get_user_information('MickeyMouse'));
-//     // console.log(await lock_user_account('MickeyMouse'));
-//     console.log(await get_user_session_data('808c7c96-d72e-46f3-8c04-9b9aeb8085a7'));
+//     let user = await get_user_information('MickeyMouse');
+//     console.log(user);
 // }
 
 // test()
@@ -180,5 +189,6 @@ module.exports = {
     get_info_from_sparePartsInventory_collection,
     add_information_to_VehicleMaintenanceRecords_collection,
     get_info_from_VehicleMaintenanceRecords_collection,
-    terminate_session
+    terminate_session,
+    unlock_user_account
 }

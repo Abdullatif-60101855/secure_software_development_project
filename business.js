@@ -1,9 +1,17 @@
 // Description: This file contains the business logic for the application.
-
-
 const persistence = require("./persistence.js");
+const regex = {
+    make: /^[a-zA-Z0-9\s]+$/,
+    model: /^[a-zA-Z0-9\s-]+$/,
+    plate: /^[a-zA-Z0-9\s-]+$/,
+    service: /^[a-zA-Z0-9\s.,-]+$/,
+    contact: /^\d{8}$/,
+    requests: /^[a-zA-Z0-9\s.,-]+$/,
+};
+
 
 const MAX_FAILED_LOGIN_ATTEMPTS = 3; // Maximum allowed failed login attempts before locking the account
+const LOCKOUT_DURATION = 5 * 60 * 1000; // Lockout duration in milliseconds (5 minutes)
 
 async function get_user_type(username, password) {
     try {
@@ -13,21 +21,21 @@ async function get_user_type(username, password) {
             return undefined; // User not found
         }
         
-        if (userData.locked) {
-            return false; // Account is locked
-        }
-        
         // The user exists, so we need to compare the password
-        if (userData.password !== persistence.computeHashSha512(password)) {
-            userData.failedLoginAttempts++;
+        if (userData.password !== persistence.computeHashSha512(password)) { // Incorrect password
+            userData.failedLoginAttempts++; // Increment failed login attempts
             
-            if (userData.failedLoginAttempts >= MAX_FAILED_LOGIN_ATTEMPTS) {
+            if (userData.failedLoginAttempts >= MAX_FAILED_LOGIN_ATTEMPTS) { // Lock the account if the maximum failed login attempts are reached
                 await persistence.lock_user_account(username);
-            } else {
-                await persistence.update_user_information(username, { failedLoginAttempts: userData.failedLoginAttempts });
+                return false; // Account is locked
             }
-            
-            return undefined; // Incorrect password
+
+            await persistence.update_user_information(username, { failedLoginAttempts: userData.failedLoginAttempts });
+            return null; // Incorrect password
+        } else if (userData.locked && userData.lockoutExpiry > new Date()) { // Account is locked
+            return false;
+        } else if (userData.locked && userData.lockoutExpiry <= new Date()) { // Account lockout expired
+            await persistence.unlock_user_account(username); // Unlock the account
         }
 
         // Reset failed login attempts if the password is correct
@@ -130,28 +138,45 @@ async function schedule_service(sessionId, data) {
         const serviceData = {
             username: sessionData.Data.username,
             serviceId: serviceId,
-            Make: data.Make,
-            Model: data.Model,
-            Plate: data.Plate,
-            Service: data.Service,
+            Make: validateInput(data.Make, regex.make) ? data.Make : null,
+            Model: validateInput(data.Model, regex.model) ? data.Model : null,
+            Plate: validateInput(data.Plate, regex.plate) ? data.Plate : null,
+            Service: validateInput(data.Service, regex.service) ? data.Service : null,
             Date: data.Date,
             Time: data.Time,
-            Contact: data.Contact,
-            Requests: data.Requests,
+            Contact: validateInput(data.Contact, regex.contact) ? data.Contact : null,
+            Requests: validateInput(data.Requests, regex.requests) ? data.Requests : null,
             status: "Pending"
         };
         
         // Add service appointment to the collection
-        await persistence.add_information_to_serviceAppointments_collection(serviceData);
+        if (areAllValuesNotNull(serviceData)){
+            await persistence.add_information_to_serviceAppointments_collection(serviceData);
+            return true; // Appointment scheduled successfully
+        } else {
+            return "Input Error"; // Some values are null, appointment not scheduled
+        }
         
-        return true; // Appointment scheduled successfully
     } catch (error) {
         console.error("Error scheduling service:", error);
         throw error; // Propagate the error
     }
 }
 
+function validateInput(input, regexPattern) {
+    return regexPattern.test(input);
+}
 
+function areAllValuesNotNull(obj) {
+    for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            if (obj[key] === null) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
 
 async function add_information_to_VehicleMaintenanceRecords_collection(data){
     await persistence.add_information_to_VehicleMaintenanceRecords_collection(data);
