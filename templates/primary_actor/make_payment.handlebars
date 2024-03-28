@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make Payment</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .payment-section {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 350px;
+        }
+
+        .payment-section h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .payment-section label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .payment-section input[type="text"],
+        .payment-section input[type="password"],
+        .payment-section input[type="date"],
+        .payment-section input[type="submit"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .payment-section input[type="submit"] {
+            background-color: #4caf50;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .payment-section input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .back-button {
+            display: block;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-section">
+        <h2>Make Payment</h2>
+        <form action="/submit_payment" method="post">
+            <label for="card_number">Card Number</label>
+            <input type="text" id="card_number" name="card_number" required>
+            <label for="expiry_date">Expiry Date</label>
+            <input type="date" id="expiry_date" name="expiry_date" required>
+            <label for="cvv">CVV</label>
+            <input type="password" id="cvv" name="cvv" required>
+            <input type="submit" value="Submit Payment">
+        </form>
+        <a href="/standard-dashboard" class="back-button">Back To Dashboard</a>
+    </div>
+</body>
+</html>

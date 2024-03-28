@@ -19,15 +19,22 @@
     </style>
 </head>
 <body>
-    <h1>Notifications</h1>
     {{#if notifications.length}}
         {{#each notifications}}
             <div class="notification">
                 <p>[{{serviceId}}] On {{Date}}, {{username}} has scheduled a car service appointment. The service includes {{Service}} for their {{Make}} {{Model}} with the license plate {{Plate}}. The appointment is set for {{Time}}, and they can be reached at {{Contact}}. Additionally, they have requested {{Requests}}. This appointment is currently {{status}} confirmation by administrators.</p>
             </div>
+            <a href="/standard-dashboard" class="back-button">Back To Dashboard</a>
+
         {{/each}}
     {{else}}
-        <p>No notifications to display.</p>
+        {{!-- <p>No notifications to display.</p> --}}
+        <div style="text-align: center;">
+            <img src="{{imagePath}}" alt="Empty" style="width: 50%; height: 50%; display: block; margin: 0 auto;">
+            <p style="font-size: 24px;">{{message}}</p>
+        <a href="/standard-dashboard" class="back-button">Back To Dashboard</a>
+
+        </div>
     {{/if}}
 </body>
 </html>

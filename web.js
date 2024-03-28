@@ -124,7 +124,7 @@ app.get('/serviceHistory', async (req, res) => {
         }
 
         // Render an appropriate response if no upcoming or past service appointments found
-        res.render('primary_actor/noServiceHistory', { message: 'No upcoming or past service appointments found.' });
+        res.render('primary_actor/No_results', { message: 'No past service appointments found.' , imagePath: '/images/no_results_1.png'});
 
     } catch (error) {
         // Logging and responding to any errors that occur during the process
@@ -161,12 +161,17 @@ app.get('/notifications', async (req, res) => {
         // console.log(username);
         const notifications = await business.get_info_from_serviceAppointments_collection(username);
         // console.log(notifications);
-        res.render('primary_actor/notifications', { notifications: notifications });
+        res.render('primary_actor/notifications', { notifications: notifications , imagePath: '/images/no_results_1.png', message: 'No notifications found.'});
 
     }catch (error) {
         console.error('Error retrieving notifications:', error);
         res.status(500).send('Internal Server Error');
     }
+});
+
+app.get('/make_payment', (req, res) => {
+    let message = req.query.message;
+    res.render('primary_actor/make_payment');
 });
 
 app.get('/logout', async (req, res) => {

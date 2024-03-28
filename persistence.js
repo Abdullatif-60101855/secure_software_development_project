@@ -136,6 +136,7 @@ async function get_info_from_invoices_collection(){
 
 async function add_information_to_sparePartsInventory_collection(data) {
     await connectDatabase();
+    let sparePartsInventory = db.collection('Spare_Parts_Inventory');
     if (sparePartsInventory){
         await sparePartsInventory.insertOne(data);
     }
@@ -143,12 +144,14 @@ async function add_information_to_sparePartsInventory_collection(data) {
 
 async function get_info_from_sparePartsInventory_collection(){
     await connectDatabase();
+    let sparePartsInventory = db.collection('Spare_Parts_Inventory');
     if (sparePartsInventory){
         let sparePartsData = await sparePartsInventory.find({}).toArray();
         return sparePartsData;
     }
 
 }
+
 
 async function add_information_to_VehicleMaintenanceRecords_collection(data) {
     await connectDatabase();
@@ -170,12 +173,6 @@ async function get_info_from_VehicleMaintenanceRecords_collection(username){
     }
 }
 
-// async function test() {
-//     let user = await get_user_information('MickeyMouse');
-//     console.log(user);
-// }
-
-// test()
 
 module.exports = {
     get_user_information,
