@@ -37,19 +37,17 @@ app.post('/', async (req, res) => {
             return;
         }
 
-        const sessionId = await business.start_user_session({ username, accountType: role });
-        const sessionInfo = await business.get_user_session_data(sessionId);
-        res.cookie('sessionkey', sessionId, { expires: sessionInfo.Expiry });
+        const sessionId = await business.start_user_session({ username, accountType: role }); // Starting a new session for the user
+        const sessionInfo = await business.get_user_session_data(sessionId); // Retrieving session data
+        res.cookie('sessionkey', sessionId, { expires: sessionInfo.Expiry, secure: true, httpOnly: true,  }); // Setting the session key in a cookie with an expiry time and secure flag (for HTTPS only)
 
         // Redirect user based on their role
         if (role === 'admin') {
             res.redirect('/admin-dashboard');
         } else if (role === 'standard') {
             res.redirect('/standard-dashboard');
-
         } else if (role === 'technician') {
             res.redirect('/technician-dashboard');
-        
         } else {
             res.status(403).send('Forbidden'); // Or handle other roles accordingly
         }
@@ -59,19 +57,19 @@ app.post('/', async (req, res) => {
     }
 });
 
-app.get('/admin-dashboard', (req, res) => {
+app.get('/admin-dashboard', isAuthenticated, (req, res) => {
     res.render('admin-dashboard');
 });
 
-app.get('/standard-dashboard', (req, res) => {
+app.get('/standard-dashboard', isAuthenticated, (req, res) => {
     res.render('primary_actor/standard-dashboard');
 });
 
-app.get('/technician-dashboard', (req, res) => {
+app.get('/technician-dashboard', isAuthenticated, (req, res) => {
     res.render('technician-dashboard');
 });
 
-app.get('/schedule_service', (req, res) => {
+app.get('/schedule_service', isAuthenticated, (req, res) => {
     let message = req.query.message;
     res.render('primary_actor/schedule_service', { message: message });
 });
@@ -180,6 +178,17 @@ app.get('/logout', async (req, res) => {
     res.clearCookie('sessionkey');
     res.redirect('/');
 });
+
+
+// isAuthenticated middleware
+function isAuthenticated(req, res, next) {
+    if (req.cookies.sessionkey) {
+        // Session exists, user is authenticated
+        return next();
+    } else {
+        res.redirect('/?message=No+active+session+or+session+has+expired'); // Redirect to login page with a formal message if session doesn't exist
+    }
+}
 
 
 

@@ -55,7 +55,7 @@ async function get_user_session_data(key) {
 
 async function start_user_session(data){
     let sessionId = crypto.randomUUID();
-    let expiryTime = new Date(Date.now() + 1000 * 60 * 5);
+    let expiryTime = new Date(Date.now() + 1000 * 60 * 1);
     let sessionData = {
         username: data.username,
         accountType: data.accountType 
