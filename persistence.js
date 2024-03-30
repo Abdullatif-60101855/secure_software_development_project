@@ -1,4 +1,7 @@
 // Description: This file contains the code that interacts with the database. It contains functions that allow the server to query the database for user information, update user information, and lock user accounts. It also contains functions that allow the server to save and retrieve session data.
+// Author: Abdullatif Abuzannad
+// Date: 2024-04-06
+
 
 // app.js
 require('dotenv').config();

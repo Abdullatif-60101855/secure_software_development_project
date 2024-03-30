@@ -1,4 +1,6 @@
 // Description: This file contains the web layer of the application.
+// Author: Abdullatif Abuzannad
+// Date: 2024-04-06
 
 const express=require('express')
 const business = require('./business.js')
@@ -74,7 +76,7 @@ app.get('/schedule_service', isAuthenticated, (req, res) => {
     res.render('primary_actor/schedule_service', { message: message });
 });
 
-app.post('/schedule_service', async (req, res) => {
+app.post('/schedule_service', isAuthenticated, async (req, res) => {
     const { Make, Model, Plate, Service, Date, Time, Contact, Requests } = req.body;
     let get_user_session_from_cookie = req.cookies.sessionkey;
     try {
@@ -98,7 +100,7 @@ app.post('/schedule_service', async (req, res) => {
 
 
 // Endpoint to retrieve service history
-app.get('/serviceHistory', async (req, res) => {
+app.get('/serviceHistory',  isAuthenticated, async (req, res) => {
     try {
         let get_user_session_from_cookie = req.cookies.sessionkey; // Retrieving session key from cookie
         let username = (await business.get_user_session_data(get_user_session_from_cookie)).Data.username; // Retrieving username from session data
@@ -131,7 +133,7 @@ app.get('/serviceHistory', async (req, res) => {
     }
 });
 
-app.get('/vehicleMaintenanceRecords', async (req, res) => {
+app.get('/vehicleMaintenanceRecords', isAuthenticated, async (req, res) => {
     try {
         const vehicleMaintenanceRecords = await business.get_info_from_VehicleMaintenanceRecords_collection(); // Retrieving vehicle maintenance records from the collection
 
@@ -151,7 +153,7 @@ app.get('/vehicleMaintenanceRecords', async (req, res) => {
     }
 });
 
-app.get('/notifications', async (req, res) => {
+app.get('/notifications', isAuthenticated, async (req, res) => {
     try {
         user_session = req.cookies.sessionkey;
         let data_from_session = await business.get_user_session_data(user_session);
@@ -167,7 +169,7 @@ app.get('/notifications', async (req, res) => {
     }
 });
 
-app.get('/make_payment', (req, res) => {
+app.get('/make_payment', isAuthenticated, (req, res) => {
     let message = req.query.message;
     res.render('primary_actor/make_payment');
 });
@@ -186,6 +188,7 @@ function isAuthenticated(req, res, next) {
         // Session exists, user is authenticated
         return next();
     } else {
+        res.clearCookie('sessionkey'); // Clear the session cookie if it exists
         res.redirect('/?message=No+active+session+or+session+has+expired'); // Redirect to login page with a formal message if session doesn't exist
     }
 }

@@ -1,4 +1,7 @@
 // Description: This file contains the business logic for the application.
+// Author: Abdullatif Abuzannad
+// Date: 2024-04-06
+
 const persistence = require("./persistence.js");
 const regex = {
     make: /^[a-zA-Z0-9\s]+$/,
