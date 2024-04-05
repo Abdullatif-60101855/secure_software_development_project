@@ -10,6 +10,10 @@ const regex = {
     service: /^[a-zA-Z0-9\s.,-]+$/,
     contact: /^\d{8}$/,
     requests: /^[a-zA-Z0-9\s.,-]+$/,
+    cardNumber: /^\d{16}$/,
+    expiryDate: /^(0[1-9]|1[0-2])\/\d{2}$/,
+    cvv: /^\d{3}$/,
+    amount: /^\d{1,5}$/
 };
 
 
@@ -194,7 +198,26 @@ async function get_info_from_serviceAppointments_collection(username){
 }
 
 async function terminate_session(sessionId) {
-    await persistence.terminate_session(sessionId);
+    await persistence.terminate_session(sessionId); // Terminate the session
+}
+
+async function validate_payment(data){
+    if (data.service && data.service.serviceId && data.service.status === "Approved") {
+
+        if (data.cardNumber === null || data.expiryDate === null || data.cvv === null || data.amount === null) {
+            return false;
+        }
+        
+        if (!regex.cardNumber.test(data.cardNumber) || !regex.expiryDate.test(data.expiryDate) || !regex.cvv.test(data.cvv) || !regex.amount.test(data.amount)) {
+            return false;
+        }
+        return true;
+    }
+    return "No service found";
+}
+
+async function delete_data(collection, query) {
+    await persistence.delete_data(collection, query);
 }
 
 
@@ -207,5 +230,7 @@ module.exports = {
     add_information_to_VehicleMaintenanceRecords_collection,
     get_info_from_VehicleMaintenanceRecords_collection,
     get_info_from_serviceAppointments_collection,
-    terminate_session
+    terminate_session,
+    validate_payment,
+    delete_data
 };

@@ -65,13 +65,20 @@
 <body>
     <div class="payment-section">
         <h2>Make Payment</h2>
-        <form action="/submit_payment" method="post">
+        {{#if message}}
+            <div class="alert alert-danger" style="background-color: #e0f8d7; color: #080808; border-color: green">
+                {{message}}
+            </div>
+        {{/if}}
+        <form action="/make_payment" method="post">
             <label for="card_number">Card Number</label>
-            <input type="text" id="card_number" name="card_number" required>
+            <input type="text" id="cardNumber" name="cardNumber" required>
             <label for="expiry_date">Expiry Date</label>
-            <input type="date" id="expiry_date" name="expiry_date" required>
+            <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY" required>
             <label for="cvv">CVV</label>
             <input type="password" id="cvv" name="cvv" required>
+            <label for="amount">Amount</label>
+            <input type="text" id="amount" name="amount" required>
             <input type="submit" value="Submit Payment">
         </form>
         <a href="/standard-dashboard" class="back-button">Back To Dashboard</a>

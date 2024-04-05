@@ -104,7 +104,7 @@ app.get('/serviceHistory',  isAuthenticated, async (req, res) => {
     try {
         let get_user_session_from_cookie = req.cookies.sessionkey; // Retrieving session key from cookie
         let username = (await business.get_user_session_data(get_user_session_from_cookie)).Data.username; // Retrieving username from session data
-        const serviceAppointments = await business.get_info_from_serviceAppointments_collection({ username }); // Retrieving service appointments from the collection
+        const serviceAppointments = await business.get_info_from_VehicleMaintenanceRecords_collection({username}); // Retrieving vehicle service records from the collection
 
         // Checking if there are any service appointments
         if (serviceAppointments && serviceAppointments.length > 0) {
@@ -133,25 +133,25 @@ app.get('/serviceHistory',  isAuthenticated, async (req, res) => {
     }
 });
 
-app.get('/vehicleMaintenanceRecords', isAuthenticated, async (req, res) => {
-    try {
-        const vehicleMaintenanceRecords = await business.get_info_from_VehicleMaintenanceRecords_collection(); // Retrieving vehicle maintenance records from the collection
+// app.get('/vehicleMaintenanceRecords', isAuthenticated, async (req, res) => {
+//     try {
+//         const vehicleMaintenanceRecords = await business.get_info_from_VehicleMaintenanceRecords_collection(); // Retrieving vehicle maintenance records from the collection
 
-        // Checking if there are any vehicle maintenance records
-        if (vehicleMaintenanceRecords && vehicleMaintenanceRecords.length > 0) {
-            // Rendering vehicle maintenance records page with the retrieved records
-            res.render('primary_actor/vehicleMaintenanceRecords', { vehicleMaintenanceRecords });
-        } else {
-            // Render an appropriate response if no vehicle maintenance records found
-            res.render('primary_actor/noVehicleMaintenanceRecords', { message: 'No vehicle maintenance records found.' });
-        }
+//         // Checking if there are any vehicle maintenance records
+//         if (vehicleMaintenanceRecords && vehicleMaintenanceRecords.length > 0) {
+//             // Rendering vehicle maintenance records page with the retrieved records
+//             res.render('primary_actor/vehicleMaintenanceRecords', { vehicleMaintenanceRecords });
+//         } else {
+//             // Render an appropriate response if no vehicle maintenance records found
+//             res.render('primary_actor/noVehicleMaintenanceRecords', { message: 'No vehicle maintenance records found.' });
+//         }
 
-    } catch (error) {
-        // Logging and responding to any errors that occur during the process
-        console.error('Error retrieving vehicle maintenance records:', error);
-        res.status(500).send('Internal Server Error');
-    }
-});
+//     } catch (error) {
+//         // Logging and responding to any errors that occur during the process
+//         console.error('Error retrieving vehicle maintenance records:', error);
+//         res.status(500).send('Internal Server Error');
+//     }
+// });
 
 app.get('/notifications', isAuthenticated, async (req, res) => {
     try {
@@ -171,8 +171,39 @@ app.get('/notifications', isAuthenticated, async (req, res) => {
 
 app.get('/make_payment', isAuthenticated, (req, res) => {
     let message = req.query.message;
-    res.render('primary_actor/make_payment');
+    res.render('primary_actor/make_payment', { message: message });
 });
+
+app.post('/make_payment', isAuthenticated, async (req, res) => {
+    const { cardNumber, expiryDate, cvv, amount } = req.body;
+    let get_user_session_from_cookie = req.cookies.sessionkey; // session key from cookie
+    let sessionInfo = await business.get_user_session_data(get_user_session_from_cookie); // session data using session key from cookie
+    let username = sessionInfo.Data.username; // extracting username from session data
+    let service_info = await business.get_info_from_serviceAppointments_collection(username); // getting service info from collection
+    for (let element of service_info){ // looping through the service info to get the service id
+        if (element.username === username){
+            var service = element;
+        }
+    }
+    let service_id = service.serviceId; // extracting service id from service info
+
+    let service_status = service.status; // extracting service status from service info 
+    try {
+        let validate_payment = await business.validate_payment({ service, service_id, service_status, cardNumber, expiryDate, cvv, amount });
+        if (validate_payment === true){
+            await business.add_information_to_VehicleMaintenanceRecords_collection(service)
+            await business.delete_data('Service_Appointments', { serviceId: service_id })
+            res.redirect('/make_payment?message=Payment+successful+for+service+ID: ' + service_id);
+        } else if (validate_payment === false){
+            res.redirect('/make_payment?message=Payment+failed');
+        } else if (validate_payment === "No service found"){
+            res.redirect('/make_payment?message=No+service+found');
+        }
+    } catch (error) {
+        console.error('Payment error:', error);
+        return res.status(500).send('Internal Server Error');
+    }
+})
 
 app.get('/logout', async (req, res) => {
     let session_id = req.cookies.SessionKey;
@@ -183,7 +214,7 @@ app.get('/logout', async (req, res) => {
 
 
 // isAuthenticated middleware
-function isAuthenticated(req, res, next) {
+async function isAuthenticated(req, res, next) {
     if (req.cookies.sessionkey) {
         // Session exists, user is authenticated
         return next();

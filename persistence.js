@@ -116,7 +116,7 @@ async function get_info_from_serviceAppointments_collection(username){
         } else {
             serviceData = await serviceAppointments.find({}).toArray();
         }
-        return serviceData;
+        return serviceData; // Return the service data as an array
     }
 }
 
@@ -158,6 +158,7 @@ async function get_info_from_sparePartsInventory_collection(){
 
 async function add_information_to_VehicleMaintenanceRecords_collection(data) {
     await connectDatabase();
+    let VehicleMaintenanceRecords = db.collection('Vehicle_Maintenance_Records');
     if (VehicleMaintenanceRecords){
         await VehicleMaintenanceRecords.insertOne(data);
     }
@@ -173,6 +174,16 @@ async function get_info_from_VehicleMaintenanceRecords_collection(username){
     }else{
     VehicleMaintenanceData = await VehicleMaintenanceRecords.find({}).toArray();
     return VehicleMaintenanceData;
+    }
+}
+
+
+
+async function delete_data(target_collection, data){
+    await connectDatabase();
+    target_collection = db.collection(target_collection);
+    if (target_collection){
+        await target_collection.deleteOne(data);
     }
 }
 
@@ -193,5 +204,6 @@ module.exports = {
     add_information_to_VehicleMaintenanceRecords_collection,
     get_info_from_VehicleMaintenanceRecords_collection,
     terminate_session,
-    unlock_user_account
+    unlock_user_account,
+    delete_data
 }
